@@ -1,0 +1,13 @@
+Port 2222
+HostKey /config/ssh_host_keys/ssh_host_ed25519_key
+HostKey /config/ssh_host_keys/ssh_host_rsa_key
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+X11Forwarding no
+ClientAliveInterval 60
+ClientAliveCountMax 3
+# Updates come from rebuilding the image; keep the CLIs from self-updating into /config.
+SetEnv DISABLE_AUTOUPDATER=1 VSCODE_CLI_DATA_DIR=/config/.vscode/cli

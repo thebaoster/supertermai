@@ -8,17 +8,19 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/thebaoster/supertermai/issues</Support>
   <Project>https://github.com/thebaoster/supertermai</Project>
-  <Overview>Always-on SSH shell for running Claude Code and other coding agents inside a persistent herdr or tmux session. Detach, reconnect from any device, and pick up where you left off. Built on linuxserver/openssh-server: key-only SSH, unprivileged, no host mounts beyond appdata.</Overview>
+  <Overview>Always-on SSH shell for running Claude Code and other coding agents inside a persistent herdr or tmux session, with an optional VS Code Remote Tunnel. Detach, reconnect from any device, and pick up where you left off. Ubuntu 24.04, key-only SSH, unprivileged, no host mounts beyond appdata.</Overview>
   <Category>Tools:Utilities Productivity:</Category>
   <TemplateURL>https://raw.githubusercontent.com/thebaoster/supertermai/main/templates/supertermai.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/openssh-server-logo.png</Icon>
   <ExtraParams>--hostname supertermai --health-cmd "nc -z localhost 2222" --health-interval 30s --health-timeout 5s --health-retries 3 --health-start-period 20s</ExtraParams>
   <Config Name="SSH Port" Target="2222" Default="2222" Mode="tcp" Description="Host port for SSH into the container." Type="Port" Display="always" Required="true" Mask="false">2222</Config>
-  <Config Name="Appdata" Target="/config" Default="/mnt/user/appdata/supertermai" Mode="rw" Description="Home directory of the SSH user: shell history, ~/.claude, herdr and tmux config." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/supertermai</Config>
+  <Config Name="Appdata" Target="/config" Default="/mnt/user/appdata/supertermai" Mode="rw" Description="Home directory of the SSH user: shell history, ~/.claude, herdr/tmux config, VS Code tunnel login." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/supertermai</Config>
   <Config Name="Public Key" Target="PUBLIC_KEY" Default="" Mode="" Description="SSH public key allowed to log in (contents of your .pub file). Password login is disabled." Type="Variable" Display="always" Required="true" Mask="false"></Config>
   <Config Name="SSH Username" Target="USER_NAME" Default="agent" Mode="" Description="Login user inside the container." Type="Variable" Display="always" Required="true" Mask="false">agent</Config>
   <Config Name="Timezone" Target="TZ" Default="UTC" Mode="" Description="" Type="Variable" Display="always" Required="false" Mask="false">UTC</Config>
-  <Config Name="Password Access" Target="PASSWORD_ACCESS" Default="false" Mode="" Description="Leave false; key-only auth." Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="VS Code Tunnel" Target="VSCODE_TUNNEL" Default="false" Mode="" Description="true to run a VS Code Remote Tunnel in the background. First time: SSH in and run `code tunnel user login --provider github` once." Type="Variable" Display="always" Required="false" Mask="false">false</Config>
+  <Config Name="Tunnel Name" Target="TUNNEL_NAME" Default="supertermai" Mode="" Description="Name shown in VS Code's Remote Explorer and at vscode.dev/tunnel/&lt;name&gt;." Type="Variable" Display="always" Required="false" Mask="false">supertermai</Config>
+  <Config Name="Sudo Access" Target="SUDO_ACCESS" Default="false" Mode="" Description="true to give the SSH user passwordless sudo inside the container." Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
   <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">99</Config>
   <Config Name="PGID" Target="PGID" Default="100" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">100</Config>
 </Container>

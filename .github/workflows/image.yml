@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - Dockerfile
+      - entrypoint.sh
+      - sshd_config
       - .github/workflows/image.yml
   workflow_dispatch:
 
