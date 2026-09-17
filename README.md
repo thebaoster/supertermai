@@ -89,6 +89,15 @@ If you already run a Cloudflare Tunnel, you can get a browser-rendered SSH termi
 
 Visit the hostname, log in, enter anything at the username prompt, and you are in the same box as over SSH; `herdr` attaches to the same sessions.
 
+The same hostname also works with a native `ssh` client from anywhere, with `cloudflared` on the client doing the Access login:
+
+```bash
+cloudflared access ssh-gen --hostname term.example.com
+ssh -o "ProxyCommand=cloudflared access ssh --hostname %h" -i ~/.cloudflared/term.example.com-cf_key <email-prefix>@term.example.com
+```
+
+or with your own key: `ProxyCommand cloudflared access ssh --hostname %h` in `~/.ssh/config` plus `User <USER_NAME>` and your `IdentityFile`.
+
 ## Updating
 
 The image is rebuilt on every change to the Dockerfile, entrypoint or sshd config, and can be rebuilt on demand (Actions > image > Run workflow) to pick up a new Claude Code or VS Code CLI release.
