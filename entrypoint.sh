@@ -57,24 +57,26 @@ chown -R root:root /config/ssh_host_keys
 chmod 700 /config/ssh_host_keys
 chmod 600 /config/ssh_host_keys/*_key
 
-# Optional SSH certificate auth (e.g. Cloudflare Access short-lived certificates):
-# SSH_CA_PUBKEY is the CA public key; SSH_CA_PRINCIPALS lists the certificate
-# principals allowed to log in as USER_NAME (Cloudflare uses the email prefix).
+# Optional SSH certificate auth (e.g. Cloudflare Access short-lived certificates).
+# Cloudflare logs in as the certificate principal (the email prefix) regardless of
+# the username typed, so each principal becomes an alias account sharing
+# USER_NAME's uid, group and home.
 if [[ -n "${SSH_CA_PUBKEY:-}" ]]; then
   printf '%s\n' "$SSH_CA_PUBKEY" > /etc/ssh/trusted_ca.pub
   chmod 644 /etc/ssh/trusted_ca.pub
-  {
-    echo "TrustedUserCAKeys /etc/ssh/trusted_ca.pub"
-    if [[ -n "${SSH_CA_PRINCIPALS:-}" ]]; then
-      echo "AuthorizedPrincipalsFile /etc/ssh/principals/%u"
+  echo "TrustedUserCAKeys /etc/ssh/trusted_ca.pub" > /etc/ssh/sshd_config.d/ca.conf
+  for p in $(tr ',' ' ' <<<"${SSH_CA_PRINCIPALS:-}"); do
+    [[ "$p" == "$USER_NAME" ]] && continue
+    if id -u "$p" >/dev/null 2>&1; then
+      usermod -o -u "$PUID" -g "$PGID" -d /config -s /bin/bash "$p"
+    else
+      useradd -o -M -u "$PUID" -g "$PGID" -d /config -s /bin/bash "$p"
     fi
-  } > /etc/ssh/sshd_config.d/ca.conf
-  if [[ -n "${SSH_CA_PRINCIPALS:-}" ]]; then
-    mkdir -p /etc/ssh/principals
-    tr ',' '\n' <<<"$SSH_CA_PRINCIPALS" | sed '/^$/d' > "/etc/ssh/principals/$USER_NAME"
-    chmod 644 "/etc/ssh/principals/$USER_NAME"
-  fi
-  log "certificate auth enabled (principals: ${SSH_CA_PRINCIPALS:-<username only>})"
+    if [[ "$SUDO_ACCESS" == "true" ]]; then
+      echo "$p ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/supertermai
+    fi
+  done
+  log "certificate auth enabled (principals: ${SSH_CA_PRINCIPALS:-$USER_NAME})"
 else
   rm -f /etc/ssh/sshd_config.d/ca.conf
 fi

@@ -47,7 +47,7 @@ Template: [templates/supertermai.xml](templates/supertermai.xml).
 | `TUNNEL_NAME` | `supertermai` | Tunnel name shown in VS Code |
 | `SUDO_ACCESS` | `false` | `true` for passwordless sudo inside the container |
 | `SSH_CA_PUBKEY` | | Optional: public key of an SSH certificate authority to trust (see Cloudflare below) |
-| `SSH_CA_PRINCIPALS` | | Optional: comma-separated certificate principals allowed to log in as `USER_NAME` |
+| `SSH_CA_PRINCIPALS` | | Optional: comma-separated certificate principals; each becomes an alias of `USER_NAME` (same uid and home) |
 | `PUID` / `PGID` | `99` / `100` | Owner of the appdata files (Unraid `nobody:users`) |
 
 ## Daily use
@@ -85,9 +85,9 @@ If you already run a Cloudflare Tunnel, you can get a browser-rendered SSH termi
 1. Tunnel: add a public hostname (e.g. `term.example.com`) with service `ssh://<unraid-ip>:2222`.
 2. Access: create a self-hosted application for that hostname with type **SSH** (browser rendering) and an Allow policy for your identity.
 3. Certificates: under Access > Service credentials > SSH, generate a short-lived certificate for that application and copy its public key.
-4. Container: set `SSH_CA_PUBKEY` to that public key and `SSH_CA_PRINCIPALS` to your email prefix (Cloudflare issues certificates with the email prefix as the principal; this maps it to `USER_NAME`). Apply.
+4. Container: set `SSH_CA_PUBKEY` to that public key and `SSH_CA_PRINCIPALS` to your email prefix. Cloudflare always logs in as the email prefix, whatever you type at the username prompt, so the container creates that name as an alias of `USER_NAME` (same uid, same home). Apply.
 
-Visit the hostname, log in, enter `USER_NAME` at the username prompt, and you are in the same box as over SSH; `herdr` attaches to the same sessions.
+Visit the hostname, log in, enter anything at the username prompt, and you are in the same box as over SSH; `herdr` attaches to the same sessions.
 
 ## Updating
 
