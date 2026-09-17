@@ -68,7 +68,8 @@ Two ways to use VS Code against the container:
 **Remote Tunnel (from anywhere, no VPN):**
 
 1. Set `VSCODE_TUNNEL` to `true` in the template and apply.
-2. SSH in once and run `code tunnel user login --provider github`; follow the device-code prompt.
+2. Log the tunnel in once. Easiest: open the container log (Docker tab > log icon); the service prints a GitHub device code, so visit `https://github.com/login/device` and enter it.
+   Or SSH in and run `code tunnel user login --provider github`.
    The login is stored in appdata (`.vscode/cli/`), so this is a one-time step.
 3. Within a minute the background service registers the tunnel.
    Open it from VS Code's Remote Explorer > Tunnels, or in a browser at `https://vscode.dev/tunnel/<TUNNEL_NAME>`.
