@@ -57,6 +57,28 @@ chown -R root:root /config/ssh_host_keys
 chmod 700 /config/ssh_host_keys
 chmod 600 /config/ssh_host_keys/*_key
 
+# Optional SSH certificate auth (e.g. Cloudflare Access short-lived certificates):
+# SSH_CA_PUBKEY is the CA public key; SSH_CA_PRINCIPALS lists the certificate
+# principals allowed to log in as USER_NAME (Cloudflare uses the email prefix).
+if [[ -n "${SSH_CA_PUBKEY:-}" ]]; then
+  printf '%s\n' "$SSH_CA_PUBKEY" > /etc/ssh/trusted_ca.pub
+  chmod 644 /etc/ssh/trusted_ca.pub
+  {
+    echo "TrustedUserCAKeys /etc/ssh/trusted_ca.pub"
+    if [[ -n "${SSH_CA_PRINCIPALS:-}" ]]; then
+      echo "AuthorizedPrincipalsFile /etc/ssh/principals/%u"
+    fi
+  } > /etc/ssh/sshd_config.d/ca.conf
+  if [[ -n "${SSH_CA_PRINCIPALS:-}" ]]; then
+    mkdir -p /etc/ssh/principals
+    tr ',' '\n' <<<"$SSH_CA_PRINCIPALS" | sed '/^$/d' > "/etc/ssh/principals/$USER_NAME"
+    chmod 644 "/etc/ssh/principals/$USER_NAME"
+  fi
+  log "certificate auth enabled (principals: ${SSH_CA_PRINCIPALS:-<username only>})"
+else
+  rm -f /etc/ssh/sshd_config.d/ca.conf
+fi
+
 mkdir -p /run/sshd
 /usr/sbin/sshd -t
 /usr/sbin/sshd -D -e &

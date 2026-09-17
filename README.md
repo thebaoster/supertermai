@@ -46,6 +46,8 @@ Template: [templates/supertermai.xml](templates/supertermai.xml).
 | `VSCODE_TUNNEL` | `false` | `true` to run a VS Code Remote Tunnel in the background |
 | `TUNNEL_NAME` | `supertermai` | Tunnel name shown in VS Code |
 | `SUDO_ACCESS` | `false` | `true` for passwordless sudo inside the container |
+| `SSH_CA_PUBKEY` | | Optional: public key of an SSH certificate authority to trust (see Cloudflare below) |
+| `SSH_CA_PRINCIPALS` | | Optional: comma-separated certificate principals allowed to log in as `USER_NAME` |
 | `PUID` / `PGID` | `99` / `100` | Owner of the appdata files (Unraid `nobody:users`) |
 
 ## Daily use
@@ -75,6 +77,17 @@ Two ways to use VS Code against the container:
    Open it from VS Code's Remote Explorer > Tunnels, or in a browser at `https://vscode.dev/tunnel/<TUNNEL_NAME>`.
 
 If the tunnel isn't showing up, check the container log; the service prints why it is waiting.
+
+## Browser terminal from anywhere (Cloudflare Access)
+
+If you already run a Cloudflare Tunnel, you can get a browser-rendered SSH terminal at a public hostname, protected by Cloudflare Access login, with no client, VPN or open port:
+
+1. Tunnel: add a public hostname (e.g. `term.example.com`) with service `ssh://<unraid-ip>:2222`.
+2. Access: create a self-hosted application for that hostname with type **SSH** (browser rendering) and an Allow policy for your identity.
+3. Certificates: under Access > Service credentials > SSH, generate a short-lived certificate for that application and copy its public key.
+4. Container: set `SSH_CA_PUBKEY` to that public key and `SSH_CA_PRINCIPALS` to your email prefix (Cloudflare issues certificates with the email prefix as the principal; this maps it to `USER_NAME`). Apply.
+
+Visit the hostname, log in, enter `USER_NAME` at the username prompt, and you are in the same box as over SSH; `herdr` attaches to the same sessions.
 
 ## Updating
 
