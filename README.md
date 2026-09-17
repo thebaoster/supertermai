@@ -20,8 +20,15 @@ The container is unprivileged, uses bridge networking, mounts only its own appda
 
 ## Install on Unraid
 
-1. Docker tab > **Template Repositories** (bottom of the page) > add `https://github.com/thebaoster/supertermai` > Save.
-2. Docker tab > **Add Container** > pick `supertermai` from the template dropdown.
+Unraid 7 no longer downloads third-party template repositories (the "Template Repositories" box is inert), so the template is installed as a user template on the flash drive, the same place the Docker tab saves its own.
+
+1. Copy the template to your server, from a machine with SSH access:
+
+   ```bash
+   scp templates/supertermai.xml root@<unraid-ip>:/boot/config/plugins/dockerMan/templates-user/my-supertermai.xml
+   ```
+
+2. Docker tab > **Add Container** > pick `supertermai` under **User templates**.
 3. Paste your SSH public key (the contents of your `.pub` file) into **Public Key**, set **Timezone**, and Apply.
    Password login is disabled; only that key can log in.
 4. First login, run `claude` once to authenticate.
