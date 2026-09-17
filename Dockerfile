@@ -43,7 +43,7 @@ RUN curl -fsSL https://claude.ai/install.sh | bash \
     && rm -rf /root/.local/share/claude /root/.local/bin/claude \
     && claude --version
 
-RUN curl -fsSL "https://code.visualstudio.com/sha/download?build=stable&os=cli-linux-x64" \
+RUN curl -fsSL "https://update.code.visualstudio.com/latest/cli-linux-x64/stable" \
       | tar -xz -C /usr/local/bin code \
     && code --version
 
