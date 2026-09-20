@@ -46,6 +46,9 @@ Template: [templates/supertermai.xml](templates/supertermai.xml).
 | `VSCODE_TUNNEL` | `false` | `true` to run a VS Code Remote Tunnel in the background |
 | `TUNNEL_NAME` | `supertermai` | Tunnel name shown in VS Code |
 | `SUDO_ACCESS` | `false` | `true` for passwordless sudo inside the container |
+| `PASSWORD_AUTH` | `false` | `true` to allow password login (see below); key login keeps working |
+| `USER_PASSWORD` | | Password for the SSH user when `PASSWORD_AUTH=true` |
+| `TOTP_SECRET` | | Optional base32 TOTP secret; password logins then also need the 6-digit code |
 | `SSH_CA_PUBKEY` | | Optional: public key of an SSH certificate authority to trust (see Cloudflare below) |
 | `SSH_CA_PRINCIPALS` | | Optional: comma-separated certificate principals; each becomes an alias of `USER_NAME` (same uid and home) |
 | `PUID` / `PGID` | `99` / `100` | Owner of the appdata files (Unraid `nobody:users`) |
@@ -77,6 +80,14 @@ Two ways to use VS Code against the container:
    Open it from VS Code's Remote Explorer > Tunnels, or in a browser at `https://vscode.dev/tunnel/<TUNNEL_NAME>`.
 
 If the tunnel isn't showing up, check the container log; the service prints why it is waiting.
+
+## Password + one-time code (for machines with nothing but `ssh`)
+
+If you want to log in from computers where you cannot install anything or carry a key file, set `PASSWORD_AUTH=true`, a long random `USER_PASSWORD`, and a base32 `TOTP_SECRET` (put the same secret in your authenticator app or password manager).
+sshd then accepts either a key or, over keyboard-interactive, the password followed by the 6-digit code.
+`MaxAuthTries 3`, `PerSourceMaxStartups 3` and the TOTP module's rate limit (3 attempts per 30 s) blunt brute force; root login and plain password auth stay off.
+
+If you expose the port to the internet (router port forward), do it only with the TOTP secret set.
 
 ## Browser terminal from anywhere (Cloudflare Access)
 

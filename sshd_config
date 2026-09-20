@@ -7,6 +7,10 @@ KbdInteractiveAuthentication no
 PubkeyAuthentication yes
 AuthorizedKeysFile .ssh/authorized_keys
 X11Forwarding no
+MaxAuthTries 3
+LoginGraceTime 30
+MaxStartups 10:30:60
+PerSourceMaxStartups 3
 ClientAliveInterval 60
 ClientAliveCountMax 3
 # Updates come from rebuilding the image; keep the CLIs from self-updating into /config.

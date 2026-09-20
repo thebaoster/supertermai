@@ -5,6 +5,7 @@ PUID="${PUID:-99}"
 PGID="${PGID:-100}"
 USER_NAME="${USER_NAME:-agent}"
 SUDO_ACCESS="${SUDO_ACCESS:-false}"
+PASSWORD_AUTH="${PASSWORD_AUTH:-false}"
 VSCODE_TUNNEL="${VSCODE_TUNNEL:-false}"
 TUNNEL_NAME="${TUNNEL_NAME:-supertermai}"
 
@@ -64,7 +65,7 @@ chmod 600 /config/ssh_host_keys/*_key
 if [[ -n "${SSH_CA_PUBKEY:-}" ]]; then
   printf '%s\n' "$SSH_CA_PUBKEY" > /etc/ssh/trusted_ca.pub
   chmod 644 /etc/ssh/trusted_ca.pub
-  echo "TrustedUserCAKeys /etc/ssh/trusted_ca.pub" > /etc/ssh/sshd_config.d/ca.conf
+  echo "TrustedUserCAKeys /etc/ssh/trusted_ca.pub" > /etc/ssh/sshd_config.d/20-ca.conf
   for p in $(tr ',' ' ' <<<"${SSH_CA_PRINCIPALS:-}"); do
     [[ "$p" == "$USER_NAME" ]] && continue
     if id -u "$p" >/dev/null 2>&1; then
@@ -78,7 +79,33 @@ if [[ -n "${SSH_CA_PUBKEY:-}" ]]; then
   done
   log "certificate auth enabled (principals: ${SSH_CA_PRINCIPALS:-$USER_NAME})"
 else
-  rm -f /etc/ssh/sshd_config.d/ca.conf
+  rm -f /etc/ssh/sshd_config.d/20-ca.conf
+fi
+
+# Optional password login (for machines with nothing but an ssh client). With
+# TOTP_SECRET set, PAM asks for the password and then a one-time code.
+accounts="$USER_NAME $(tr ',' ' ' <<<"${SSH_CA_PRINCIPALS:-}")"
+if [[ "$PASSWORD_AUTH" == "true" ]]; then
+  [[ -n "${USER_PASSWORD:-}" ]] || { log "ERROR: PASSWORD_AUTH=true but USER_PASSWORD is empty"; exit 1; }
+  for a in $accounts; do echo "$a:$USER_PASSWORD" | chpasswd; done
+  cat > /etc/ssh/sshd_config.d/10-auth.conf <<'EOF'
+KbdInteractiveAuthentication yes
+AuthenticationMethods publickey keyboard-interactive
+EOF
+  if [[ -n "${TOTP_SECRET:-}" ]]; then
+    printf '%s\n" RATE_LIMIT 3 30\n" WINDOW_SIZE 3\n" DISALLOW_REUSE\n" TOTP_AUTH\n' "$TOTP_SECRET" > /config/.google_authenticator
+    chown "$PUID:$PGID" /config/.google_authenticator
+    chmod 400 /config/.google_authenticator
+    grep -q pam_google_authenticator /etc/pam.d/sshd || echo "auth required pam_google_authenticator.so" >> /etc/pam.d/sshd
+    log "password + one-time code login enabled for: $accounts"
+  else
+    sed -i '/pam_google_authenticator/d' /etc/pam.d/sshd
+    log "password login enabled (no TOTP) for: $accounts"
+  fi
+else
+  for a in $accounts; do passwd -l "$a" >/dev/null 2>&1 || true; done
+  rm -f /etc/ssh/sshd_config.d/10-auth.conf
+  sed -i '/pam_google_authenticator/d' /etc/pam.d/sshd
 fi
 
 mkdir -p /run/sshd

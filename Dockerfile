@@ -18,6 +18,7 @@ RUN apt-get update \
         git \
         gnupg \
         less \
+        libpam-google-authenticator \
         netcat-openbsd \
         openssh-server \
         procps \
@@ -47,7 +48,7 @@ RUN curl -fsSL "https://update.code.visualstudio.com/latest/cli-linux-x64/stable
       | tar -xz -C /usr/local/bin code \
     && code --version
 
-COPY sshd_config /etc/ssh/sshd_config.d/supertermai.conf
+COPY sshd_config /etc/ssh/sshd_config.d/50-supertermai.conf
 COPY entrypoint.sh /usr/local/bin/entrypoint
 RUN chmod 0755 /usr/local/bin/entrypoint && mkdir -p /run/sshd
 
