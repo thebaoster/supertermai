@@ -15,6 +15,7 @@ The container is unprivileged, uses bridge networking, mounts only its own appda
 - OpenSSH server on port 2222, key-only, root login disabled, host keys persisted in appdata
 - `herdr` (static binary, pinned by `HERDR_VERSION`) and `tmux` as a fallback multiplexer
 - Claude Code via the official native installer, with the in-container auto-updater disabled so the binary never drifts from the image
+- OpenAI Codex CLI (`codex`) via npm
 - VS Code CLI (`code`) for Remote Tunnels
 - Node.js 22 for npx-based MCP servers, plus git, ripgrep, sudo (off by default)
 
@@ -35,6 +36,8 @@ Unraid 7 no longer downloads third-party template repositories (the "Template Re
    With no browser available it prints a login code to paste back into the terminal.
    Credentials persist under the appdata path (`/mnt/user/appdata/supertermai/.claude/` by default).
    Alternatively export `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token` on another machine).
+5. For Codex, run `codex login --device-auth` once (headless device-code flow) or `echo "$OPENAI_API_KEY" | codex login --with-api-key`.
+   Credentials persist in `~/.codex/` under the appdata path.
 
 Template: [templates/supertermai.xml](templates/supertermai.xml).
 
@@ -111,7 +114,7 @@ or with your own key: `ProxyCommand cloudflared access ssh --hostname %h` in `~/
 
 ## Updating
 
-The image is rebuilt on every change to the Dockerfile, entrypoint or sshd config, and can be rebuilt on demand (Actions > image > Run workflow) to pick up a new Claude Code or VS Code CLI release.
+The image is rebuilt on every change to the Dockerfile, entrypoint or sshd config, and can be rebuilt on demand (Actions > image > Run workflow) to pick up a new Claude Code, Codex or VS Code CLI release.
 Unraid's Docker tab will then show an update for `supertermai`; apply it like any other container.
 
 ## Limitation

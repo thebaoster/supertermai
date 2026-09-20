@@ -30,7 +30,10 @@ RUN apt-get update \
     && curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/* \
-    && userdel -r ubuntu
+    && userdel -r ubuntu \
+    && npm install -g @openai/codex \
+    && npm cache clean --force \
+    && codex --version
 
 RUN curl -fsSL -o /usr/local/bin/herdr \
       "https://github.com/herdrdev/herdr/releases/download/${HERDR_VERSION}/herdr-linux-x86_64" \
